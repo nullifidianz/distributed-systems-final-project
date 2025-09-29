@@ -1,0 +1,10 @@
+github.com/fatih/color v1.16.0 h1:BOmIZFr7R9VpN3Dx8s5L8vQnQhZtK8VGnYVHrM7rQN8=
+github.com/fatih/color v1.16.0/go.mod h1:x5Q8r4bU7Z8M8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8Q8=
+github.com/joho/godotenv v1.5.1 h1:RnKQ0R7M5kL5kL5kL5kL5kL5kL5kL5kL5kL5kL5kL5k=
+github.com/joho/godotenv v1.5.1/go.mod h1:RnKQ0R7M5kL5kL5kL5kL5kL5kL5kL5kL5kL5kL5kL5k=
+github.com/mattn/go-colorable v0.1.13 h1:fFA4WZxdTb6R8m5kL5kL5kL5kL5kL5kL5kL5kL5kL5k=
+github.com/mattn/go-colorable v0.1.13/go.mod h1:7SGs/uw0bbHceS5kL5kL5kL5kL5kL5kL5kL5kL5kL5k=
+github.com/mattn/go-isatty v0.0.20 h1:xfD0iDu6KnYkrUnljA74xQ4pSqve/9a7jN8J8rN8J8J8=
+github.com/mattn/go-isatty v0.0.20/go.mod h1:W0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0=
+golang.org/x/sys v0.14.0 h1:rf0qf0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0=
+golang.org/x/sys v0.14.0/go.mod h1:f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0=
