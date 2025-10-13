@@ -1,23 +1,45 @@
 version: '3.8'
 
 services:
-  # Servidor Java (Spring Boot)
+  # Proxy Pub/Sub Python
+  pubsub-proxy:
+    build:
+      context: ./part2/proxy/python
+      dockerfile: Dockerfile
+    container_name: distributed-pubsub-proxy
+    ports:
+      - "5557:5557"  # XSUB
+      - "5558:5558"  # XPUB
+    networks:
+      - chat-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import zmq; ctx = zmq.Context(); s = ctx.socket(zmq.REQ); s.connect('tcp://localhost:5557'); s.send_string('test'); s.close(); ctx.term()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Servidor Java (Spring Boot) com ZeroMQ
   chat-server:
     build: 
       context: ./part1/server/java
       dockerfile: Dockerfile
     container_name: distributed-chat-server
     ports:
-      - "8080:8080"
+      - "5555:5555"  # ZeroMQ REQ-REP
     volumes:
       - chat-data:/app/data
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     networks:
       - chat-network
+    depends_on:
+      pubsub-proxy:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/request", "-X", "POST", "-H", "Content-Type: application/json", "-d", "{\"service\":\"users\",\"data\":{\"timestamp\":\"\"}}"]
+      test: ["CMD", "python", "-c", "import zmq; ctx = zmq.Context(); s = ctx.socket(zmq.REQ); s.connect('tcp://localhost:5555'); s.send_string('{\"service\":\"users\",\"data\":{\"timestamp\":\"\"}}'); s.recv_string(); s.close(); ctx.term()"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -33,7 +55,7 @@ services:
       chat-server:
         condition: service_healthy
     environment:
-      - SERVER_URL=http://chat-server:8080
+      - SERVER_URL=tcp://chat-server:5555
     networks:
       - chat-network
     command: ["./main"]
@@ -51,7 +73,7 @@ services:
       chat-server:
         condition: service_healthy
     environment:
-      - SERVER_URL=http://chat-server:8080
+      - SERVER_URL=tcp://chat-server:5555
     networks:
       - chat-network
     command: ["./main"]
@@ -60,6 +82,38 @@ services:
     restart: "no"
     profiles:
       - multi-client
+
+  # Cliente Bot Automatizado
+  chat-bot-1:
+    build:
+      context: ./part2/client/python-bot
+      dockerfile: Dockerfile
+    container_name: distributed-chat-bot-1
+    depends_on:
+      chat-server:
+        condition: service_healthy
+    networks:
+      - chat-network
+    restart: unless-stopped
+    deploy:
+      replicas: 1
+
+  # Cliente Bot Automatizado (réplica)
+  chat-bot-2:
+    build:
+      context: ./part2/client/python-bot
+      dockerfile: Dockerfile
+    container_name: distributed-chat-bot-2
+    depends_on:
+      chat-server:
+        condition: service_healthy
+    networks:
+      - chat-network
+    restart: unless-stopped
+    deploy:
+      replicas: 1
+    profiles:
+      - multi-bot
 
 networks:
   chat-network:

@@ -35,6 +35,12 @@ func (cli *CLI) Run() {
 		return
 	}
 
+	// Iniciar listener de mensagens
+	cli.chatClient.StartMessageListener()
+
+	// Subscrever para mensagens diretas
+	cli.chatClient.SubscribeToUser()
+
 	// Menu principal
 	cli.showMainMenu()
 
@@ -66,7 +72,7 @@ func (cli *CLI) Run() {
 func (cli *CLI) showWelcome() {
 	fmt.Println(color.CyanString("══════════════════════════════════════"))
 	fmt.Println(color.CyanString("  Sistema de Chat Distribuído"))
-	fmt.Println(color.CyanString("  Parte 1: Request-Reply"))
+	fmt.Println(color.CyanString("  Parte 2: Publisher-Subscriber"))
 	fmt.Println(color.CyanString("══════════════════════════════════════"))
 	fmt.Println()
 }
@@ -92,7 +98,10 @@ func (cli *CLI) showMainMenu() {
 	fmt.Println("1. Listar usuários")
 	fmt.Println("2. Listar canais")
 	fmt.Println("3. Criar canal")
-	fmt.Println("4. Exit")
+	fmt.Println("4. Publicar em canal")
+	fmt.Println("5. Enviar mensagem direta")
+	fmt.Println("6. Inscrever em canal")
+	fmt.Println("7. Exit")
 	fmt.Println(color.YellowString("══════════════════════════"))
 }
 
@@ -104,7 +113,13 @@ func (cli *CLI) handleCommand(input string) error {
 		return cli.listChannels()
 	case "3", "criar canal", "create":
 		return cli.createChannel()
-	case "4", "exit", "quit", "sair":
+	case "4", "publicar", "publish":
+		return cli.publishToChannel()
+	case "5", "mensagem", "message":
+		return cli.sendMessage()
+	case "6", "inscrever", "subscribe":
+		return cli.subscribeToChannel()
+	case "7", "exit", "quit", "sair":
 		return nil
 	default:
 		fmt.Println(color.YellowString("Comando não reconhecido. Use os comandos do menu:"))
@@ -161,4 +176,66 @@ func (cli *CLI) createChannel() error {
 	}
 
 	return cli.chatClient.CreateChannel(channelName)
+}
+
+func (cli *CLI) publishToChannel() error {
+	fmt.Print("Digite o nome do canal: ")
+	if !cli.scanner.Scan() {
+		return fmt.Errorf("entrada inválida")
+	}
+
+	channelName := strings.TrimSpace(cli.scanner.Text())
+	if channelName == "" {
+		return fmt.Errorf("nome do canal não pode estar vazio")
+	}
+
+	fmt.Print("Digite sua mensagem: ")
+	if !cli.scanner.Scan() {
+		return fmt.Errorf("entrada inválida")
+	}
+
+	message := strings.TrimSpace(cli.scanner.Text())
+	if message == "" {
+		return fmt.Errorf("mensagem não pode estar vazia")
+	}
+
+	return cli.chatClient.PublishToChannel(channelName, message)
+}
+
+func (cli *CLI) sendMessage() error {
+	fmt.Print("Digite o nome do usuário destino: ")
+	if !cli.scanner.Scan() {
+		return fmt.Errorf("entrada inválida")
+	}
+
+	username := strings.TrimSpace(cli.scanner.Text())
+	if username == "" {
+		return fmt.Errorf("nome do usuário não pode estar vazio")
+	}
+
+	fmt.Print("Digite sua mensagem: ")
+	if !cli.scanner.Scan() {
+		return fmt.Errorf("entrada inválida")
+	}
+
+	message := strings.TrimSpace(cli.scanner.Text())
+	if message == "" {
+		return fmt.Errorf("mensagem não pode estar vazia")
+	}
+
+	return cli.chatClient.SendMessage(username, message)
+}
+
+func (cli *CLI) subscribeToChannel() error {
+	fmt.Print("Digite o nome do canal para se inscrever: ")
+	if !cli.scanner.Scan() {
+		return fmt.Errorf("entrada inválida")
+	}
+
+	channelName := strings.TrimSpace(cli.scanner.Text())
+	if channelName == "" {
+		return fmt.Errorf("nome do canal não pode estar vazio")
+	}
+
+	return cli.chatClient.SubscribeToChannel(channelName)
 }

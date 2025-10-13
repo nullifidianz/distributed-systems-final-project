@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/fatih/color v1.16.0
 	github.com/joho/godotenv v1.5.1
+	github.com/pebbe/zmq4 v1.4.0
 )
 
 require (
