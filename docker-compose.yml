@@ -1,9 +1,7 @@
-version: '3.8'
-
 services:
   # Servidor Java (Spring Boot)
   chat-server:
-    build: 
+    build:
       context: ./part1/server/java
       dockerfile: Dockerfile
     container_name: distributed-chat-server
@@ -17,7 +15,19 @@ services:
       - chat-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/request", "-X", "POST", "-H", "Content-Type: application/json", "-d", "{\"service\":\"users\",\"data\":{\"timestamp\":\"\"}}"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:8080/api/request",
+          "-X",
+          "POST",
+          "-H",
+          "Content-Type: application/json",
+          "-d",
+          '{"service":"users","data":{"timestamp":""}}',
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -40,26 +50,6 @@ services:
     stdin_open: true
     tty: true
     restart: "no"
-
-  # Cliente Go adicional para teste (opcional)
-  chat-client-2:
-    build:
-      context: ./part1/client/go
-      dockerfile: Dockerfile
-    container_name: distributed-chat-client-2
-    depends_on:
-      chat-server:
-        condition: service_healthy
-    environment:
-      - SERVER_URL=http://chat-server:8080
-    networks:
-      - chat-network
-    command: ["./main"]
-    stdin_open: true
-    tty: true
-    restart: "no"
-    profiles:
-      - multi-client
 
 networks:
   chat-network:
